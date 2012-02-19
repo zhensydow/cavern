@@ -18,7 +18,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 module Main( main ) where
 
 -- -----------------------------------------------------------------------------
+import qualified Graphics.UI.SDL as SDL( 
+  InitFlag(..), Event(..), init, setVideoMode, waitEvent )
+
+-- -----------------------------------------------------------------------------
+mainLoop :: IO ()
+mainLoop = do
+  e <- SDL.waitEvent
+  case e of
+    SDL.Quit -> return ()
+    otherwise -> mainLoop
+
+-- -----------------------------------------------------------------------------
 main :: IO ()
-main = return ()
+main = do
+  SDL.init [SDL.InitEverything]
+  SDL.setVideoMode 640 480 32 []
+  mainLoop
 
 -- -----------------------------------------------------------------------------
