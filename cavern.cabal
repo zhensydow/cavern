@@ -11,10 +11,19 @@ Maintainer:          zhen.sydow@gmail.com
 Copyright:           (c) 2012 Luis Cabellos
 Category:            Game
 Build-type:          Simple
-Extra-source-files:  README.org
 Cabal-version:       >=1.10
 
+Data-Dir:            data
+Data-Files:          *.ttf
+Extra-source-files:  README.org
 
+Library
+  Hs-source-dirs:      src
+  Default-language:    Haskell2010
+  Exposed-modules:     Cavern.Render
+  Other-modules:       Paths_cavern 
+  Build-depends:       base==4.3.*, mtl==2.0.*, transformers==0.2.*, text==0.11.*, SDL==0.6.*, SDL-ttf==0.6.*
+ 
 Executable cavern
   Hs-source-dirs:      src
   Default-language:    Haskell2010
@@ -27,4 +36,3 @@ Executable cavern
   
   -- Extra tools (e.g. alex, hsc2hs, ...) needed to build the source.
   -- Build-tools:         
-  
