@@ -16,12 +16,17 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ----------------------------------------------------------------------------- -}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-module Cavern.Render( RenderState, runRender, clearScreen, renderText ) where
+module Cavern.Render(
+  RenderState, TextSpan(..), runRender, mkRenderState,  clearScreen, renderText,
+  -- * Colors
+  black, white, red, green, blue
+  ) where
 
 -- -----------------------------------------------------------------------------
 import Control.Monad.IO.Class( MonadIO, liftIO )
 import Control.Monad.State( MonadState, StateT, runStateT, get )
 import Data.Text( Text, unpack )
+import Data.Word( Word8 )
 import qualified Graphics.UI.SDL as SDL(
   Surface, InitFlag(..), Color(..), Rect(..), init, setVideoMode, flip,
   blitSurface, mapRGB, fillRect, surfaceGetPixelFormat, getVideoSurface )
@@ -30,15 +35,30 @@ import qualified Graphics.UI.SDL.TTF as SDLTTF(
 import Paths_cavern( getDataFileName )
 
 -- -----------------------------------------------------------------------------
+data TextSpan = TextSpan
+                { txtX :: ! Int
+                , txtY :: ! Int
+                , txtColor :: !(Word8, Word8, Word8)
+                , txtData :: ! Text }
+
+-- -----------------------------------------------------------------------------
+black, white, red, green, blue :: (Word8, Word8, Word8)
+black = (0,0,0)
+white = (255,255,255)
+red = (255,0,0)
+green = (0,255,0)
+blue = (0,0,255)
+
+-- -----------------------------------------------------------------------------
 data RenderState = RS { renderFont :: !SDLTTF.Font }
 
 -- -----------------------------------------------------------------------------
 mkRenderState :: IO RenderState
 mkRenderState = do
-  SDL.init [SDL.InitVideo]
-  SDLTTF.init
-  SDL.setVideoMode 640 480 32 []
-  filename <- getDataFileName "GentiumPlus-R.ttf" 
+  _ <- SDL.init [SDL.InitVideo]
+  _ <- SDLTTF.init
+  _ <- SDL.setVideoMode 640 480 32 []
+  filename <- getDataFileName "GentiumPlus-R.ttf"
   font <- SDLTTF.openFont filename 14
   return $! RS font
 
@@ -73,18 +93,18 @@ clearScreen :: Render ()
 clearScreen = do
   screen <- getMainBuffer
   pixel <- io $ SDL.mapRGB (SDL.surfaceGetPixelFormat screen) 0 50 0
-  io $ SDL.fillRect screen Nothing pixel
+  _ <- io $ SDL.fillRect screen Nothing pixel
   return ()
 
 -- -----------------------------------------------------------------------------
-renderText :: Int -> Int -> Text -> Render ()
-renderText x y txt = do
+renderText :: TextSpan -> Render ()
+renderText (TextSpan x y (r,g,b) txt) = do
   screen <- getMainBuffer
   font <- getMainFont
   let str = unpack txt
   (w,h) <- io $ SDLTTF.textSize font str
-  txtBuff <- io $ SDLTTF.renderTextBlended font str (SDL.Color 255 255 255)
-  io $ SDL.blitSurface txtBuff Nothing screen (Just $ SDL.Rect x y w h)
+  txtBuff <- io $ SDLTTF.renderTextBlended font str (SDL.Color r g b)
+  _ <- io $ SDL.blitSurface txtBuff Nothing screen (Just $ SDL.Rect x y w h)
   return ()
 
 -- -----------------------------------------------------------------------------
