@@ -22,7 +22,7 @@ Library
   Default-language:    Haskell2010
   Exposed-modules:     Cavern.Render
   Other-modules:       Paths_cavern 
-  Build-depends:       base==4.3.*, mtl==2.0.*, transformers==0.2.*, text==0.11.*, SDL==0.6.*, SDL-ttf==0.6.*
+  Build-depends:       base==4.3.*, mtl==2.0.*, transformers==0.2.*, text==0.11.*, SDL==0.6.*, SDL-image==0.6.*, SDL-ttf==0.6.*
  
 Executable cavern
   Hs-source-dirs:      src
