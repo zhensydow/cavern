@@ -19,9 +19,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 module Cavern.Render(
   -- * Render Monad
   RenderState, runRender, mkRenderState,  clearScreen, renderText,
-  renderRectangle,
+  renderRectangle, renderImage, loadImage,
   -- * Types
-  TextSpan(..), Rectangle(..),
+  TextSpan(..), Rectangle(..), Image(..), Translatable(..),
   -- * Colors
   black, white, red, green, blue
   ) where
@@ -36,6 +36,7 @@ import qualified Graphics.UI.SDL as SDL(
   blitSurface, mapRGB, fillRect, surfaceGetPixelFormat, getVideoSurface )
 import qualified Graphics.UI.SDL.TTF as SDLTTF(
   Font, init, openFont, renderTextBlended, textSize )
+import qualified Graphics.UI.SDL.Image as SDL( load )
 import Paths_cavern( getDataFileName )
 
 -- -----------------------------------------------------------------------------
@@ -60,6 +61,28 @@ data Rectangle = Rectangle
                  , rectW :: ! Int
                  , rectH :: ! Int
                  , rectColor :: !(Word8, Word8, Word8) }
+
+-- -----------------------------------------------------------------------------
+data Image = Image
+                 { imgX :: ! Int
+                 , imgY :: ! Int
+                 , imgSurface :: ! SDL.Surface }
+
+-- -----------------------------------------------------------------------------
+class Translatable a where
+  moveTo :: Int -> Int -> a -> a
+  translateTo :: Int -> Int -> a -> a
+
+instance Translatable Image where
+  moveTo x y img = img{ imgX = x, imgY = y }
+  translateTo dx dy img = img{ imgX = imgX img + dx
+                             , imgY = imgY img + dy }
+
+-- -----------------------------------------------------------------------------
+loadImage :: FilePath -> IO Image
+loadImage filename = do
+  surface <- SDL.load filename
+  return $! Image 0 0 surface
 
 -- -----------------------------------------------------------------------------
 data RenderState = RS { renderFont :: !SDLTTF.Font }
@@ -125,6 +148,13 @@ renderRectangle (Rectangle x y w h (r,g,b)) = do
   screen <- getMainBuffer
   pixel <- io $ SDL.mapRGB (SDL.surfaceGetPixelFormat screen) r g b
   _ <- io $ SDL.fillRect screen (Just $ SDL.Rect x y w h) pixel
+  return ()
+
+-- -----------------------------------------------------------------------------
+renderImage :: Image -> Render ()
+renderImage (Image x y img) = do
+  screen <- getMainBuffer
+  _ <- io $ SDL.blitSurface img Nothing screen (Just $ SDL.Rect x y 0 0)
   return ()
 
 -- -----------------------------------------------------------------------------
