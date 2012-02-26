@@ -17,7 +17,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ----------------------------------------------------------------------------- -}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module Cavern.Render(
-  RenderState, TextSpan(..), runRender, mkRenderState,  clearScreen, renderText,
+  -- * Render Monad
+  RenderState, runRender, mkRenderState,  clearScreen, renderText,
+  renderRectangle,
+  -- * Types
+  TextSpan(..), Rectangle(..),
   -- * Colors
   black, white, red, green, blue
   ) where
@@ -35,6 +39,14 @@ import qualified Graphics.UI.SDL.TTF as SDLTTF(
 import Paths_cavern( getDataFileName )
 
 -- -----------------------------------------------------------------------------
+black, white, red, green, blue :: (Word8, Word8, Word8)
+black = (0,0,0)
+white = (255,255,255)
+red = (255,0,0)
+green = (0,255,0)
+blue = (0,0,255)
+
+-- -----------------------------------------------------------------------------
 data TextSpan = TextSpan
                 { txtX :: ! Int
                 , txtY :: ! Int
@@ -42,12 +54,12 @@ data TextSpan = TextSpan
                 , txtData :: ! Text }
 
 -- -----------------------------------------------------------------------------
-black, white, red, green, blue :: (Word8, Word8, Word8)
-black = (0,0,0)
-white = (255,255,255)
-red = (255,0,0)
-green = (0,255,0)
-blue = (0,0,255)
+data Rectangle = Rectangle
+                 { rectX :: ! Int
+                 , rectY :: ! Int
+                 , rectW :: ! Int
+                 , rectH :: ! Int
+                 , rectColor :: !(Word8, Word8, Word8) }
 
 -- -----------------------------------------------------------------------------
 data RenderState = RS { renderFont :: !SDLTTF.Font }
@@ -105,6 +117,14 @@ renderText (TextSpan x y (r,g,b) txt) = do
   (w,h) <- io $ SDLTTF.textSize font str
   txtBuff <- io $ SDLTTF.renderTextBlended font str (SDL.Color r g b)
   _ <- io $ SDL.blitSurface txtBuff Nothing screen (Just $ SDL.Rect x y w h)
+  return ()
+
+-- -----------------------------------------------------------------------------
+renderRectangle :: Rectangle -> Render ()
+renderRectangle (Rectangle x y w h (r,g,b)) = do
+  screen <- getMainBuffer
+  pixel <- io $ SDL.mapRGB (SDL.surfaceGetPixelFormat screen) r g b
+  _ <- io $ SDL.fillRect screen (Just $ SDL.Rect x y w h) pixel
   return ()
 
 -- -----------------------------------------------------------------------------
