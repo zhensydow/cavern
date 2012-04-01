@@ -15,11 +15,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ----------------------------------------------------------------------------- -}
-module Main( main, testStage ) where
+module Main( main, testStage, test01 ) where
 
 -- -----------------------------------------------------------------------------
-import qualified Graphics.UI.SDL as SDL( 
+import Control.Monad( forM_ )
+import qualified Graphics.UI.SDL as SDL(
   InitFlag(..), Event(..), init, setVideoMode, waitEvent )
+import System.Posix.Unistd( sleep )
 import Cavern.Render
 import Cavern.Stage
 
@@ -52,6 +54,14 @@ testStage = do
                     , ImageProp (return $ moveTo 550 200 ss)]
     , Layer 800 480 [ImageProp (return $ moveTo 500 130 cc)]
     , Layer 1000 480 [ImageProp (return $ moveTo 0 309 dd)] ]
-  
+
+-- -----------------------------------------------------------------------------
+test01 :: IO ()
+test01 = do
+  a <- mkRenderState
+  st <- testStage
+  forM_ [20,40..360] $ \i -> do
+    _ <- runRender (clearScreen >> renderStage st (Camera i 0) ) a
+    sleep 1
 
 -- -----------------------------------------------------------------------------
