@@ -150,7 +150,9 @@ renderStage :: Stage -> Camera -> Render ()
 renderStage stage camera = do
   forM_ (stageLayers stage) $ \layer -> do
     let lw = fromIntegral $ layerWidth layer - 640
-        tx = round $ (fromIntegral posx) * (lw / stw)
+        tx = if stw == 0
+             then 0
+             else round $ (fromIntegral posx) * (lw / stw)
     forM_ (layerImages layer) $ \prop -> do
       img <- io $ getImage prop
       renderImage $ translateTo (-tx) (-posy) $ img
