@@ -20,6 +20,7 @@ module Main( main ) where
 -- -----------------------------------------------------------------------------
 import qualified Graphics.UI.SDL as SDL( 
   InitFlag(..), Event(..), init, setVideoMode, waitEvent )
+import Cavern.Render
 
 -- -----------------------------------------------------------------------------
 mainLoop :: IO ()
@@ -33,7 +34,23 @@ mainLoop = do
 main :: IO ()
 main = do
   SDL.init [SDL.InitEverything]
-  SDL.setVideoMode 640 480 32 []
+  _ <- SDL.setVideoMode 640 480 32 []
   mainLoop
+
+-- -----------------------------------------------------------------------------
+testStage :: IO Stage
+testStage = do
+  aa <- loadImage "data/scene01a.png"
+  bb <- loadImage "data/scene01b.png"
+  cc <- loadImage "data/scene01c.png"
+  dd <- loadImage "data/scene01d.png"
+  ss <- loadImage "data/sprite01.png"
+  return $! Stage 1000 480
+    [ Layer 640 480 [ImageProp (return aa)]
+    , Layer 800 480 [ImageProp (return bb)
+                    , ImageProp (return $ moveTo 550 200 ss)]
+    , Layer 800 480 [ImageProp (return $ moveTo 500 130 cc)]
+    , Layer 1000 480 [ImageProp (return $ moveTo 0 309 dd)] ]
+  
 
 -- -----------------------------------------------------------------------------

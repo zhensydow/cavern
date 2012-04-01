@@ -19,21 +19,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 module Cavern.Render(
   -- * Render Monad
   RenderState, runRender, mkRenderState,  clearScreen, renderText,
-  renderRectangle, renderImage, loadImage,
+  renderRectangle, renderImage, loadImage, renderStage,
   -- * Types
-  TextSpan(..), Rectangle(..), Image(..), Translatable(..),
+  TextSpan(..), Rectangle(..), Image(..), Translatable(..), Stage(..), 
+  Layer(..), ImageProp(..), Camera(..),
   -- * Colors
   black, white, red, green, blue
   ) where
 
 -- -----------------------------------------------------------------------------
+import Control.Monad( forM_ )
 import Control.Monad.IO.Class( MonadIO, liftIO )
 import Control.Monad.State( MonadState, StateT, runStateT, get )
 import Data.Text( Text, unpack )
 import Data.Word( Word8 )
 import qualified Graphics.UI.SDL as SDL(
-  Surface, InitFlag(..), Color(..), Rect(..), init, setVideoMode, flip,
-  blitSurface, mapRGB, fillRect, surfaceGetPixelFormat, getVideoSurface )
+  Surface, InitFlag(..), Color(..), Rect(..), init, setVideoMode, setCaption, 
+  flip, blitSurface, mapRGB, fillRect, surfaceGetPixelFormat, getVideoSurface )
 import qualified Graphics.UI.SDL.TTF as SDLTTF(
   Font, init, openFont, renderTextBlended, textSize )
 import qualified Graphics.UI.SDL.Image as SDL( load )
@@ -64,9 +66,31 @@ data Rectangle = Rectangle
 
 -- -----------------------------------------------------------------------------
 data Image = Image
-                 { imgX :: ! Int
-                 , imgY :: ! Int
-                 , imgSurface :: ! SDL.Surface }
+             { imgX :: ! Int
+             , imgY :: ! Int
+             , imgSurface :: ! SDL.Surface }
+
+-- -----------------------------------------------------------------------------
+data ImageProp = ImageProp
+             { getImage :: IO Image }
+
+-- -----------------------------------------------------------------------------
+data Layer = Layer 
+             { layerWidth :: ! Int
+             , layerHeight :: ! Int
+             , layerImages :: [ImageProp] }
+                             
+-- -----------------------------------------------------------------------------
+data Stage = Stage
+             { stageWidth :: ! Int
+             , stageHeight :: ! Int
+             , stageLayers :: [Layer] }
+
+-- -----------------------------------------------------------------------------
+data Camera = Camera
+              { cameraX :: ! Int
+              , cameraY :: ! Int }
+              deriving( Show )
 
 -- -----------------------------------------------------------------------------
 class Translatable a where
@@ -93,6 +117,7 @@ mkRenderState = do
   _ <- SDL.init [SDL.InitVideo]
   _ <- SDLTTF.init
   _ <- SDL.setVideoMode 640 480 32 []
+  SDL.setCaption "cavern" ""
   filename <- getDataFileName "GentiumPlus-R.ttf"
   font <- SDLTTF.openFont filename 14
   return $! RS font
@@ -156,5 +181,21 @@ renderImage (Image x y img) = do
   screen <- getMainBuffer
   _ <- io $ SDL.blitSurface img Nothing screen (Just $ SDL.Rect x y 0 0)
   return ()
+
+-- -----------------------------------------------------------------------------
+renderStage :: Stage -> Camera -> Render ()
+renderStage stage camera = do
+  forM_ (stageLayers stage) $ \layer -> do
+    let lw = fromIntegral $ layerWidth layer - 640
+        tx = round $ (fromIntegral posx) * (lw / stw)
+    forM_ (layerImages layer) $ \prop -> do
+      img <- io $ getImage prop
+      renderImage $ translateTo (-tx) (-posy) $ img
+  return ()
+  
+    where
+      stw = fromIntegral $ stageWidth stage - 640
+      posx = cameraX camera
+      posy = cameraY camera
 
 -- -----------------------------------------------------------------------------
