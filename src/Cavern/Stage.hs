@@ -15,43 +15,28 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ----------------------------------------------------------------------------- -}
-module Main( main, testStage ) where
+module Cavern.Stage(
+  -- * Types
+  Stage(..), Layer(..), ImageProp(..)
+  ) where
 
 -- -----------------------------------------------------------------------------
-import qualified Graphics.UI.SDL as SDL( 
-  InitFlag(..), Event(..), init, setVideoMode, waitEvent )
-import Cavern.Render
-import Cavern.Stage
+import Cavern.Image( Image(..) )
 
 -- -----------------------------------------------------------------------------
-mainLoop :: IO ()
-mainLoop = do
-  e <- SDL.waitEvent
-  case e of
-    SDL.Quit -> return ()
-    _ -> mainLoop
+data ImageProp = ImageProp
+             { getImage :: IO Image }
 
 -- -----------------------------------------------------------------------------
-main :: IO ()
-main = do
-  SDL.init [SDL.InitEverything]
-  _ <- SDL.setVideoMode 640 480 32 []
-  mainLoop
+data Layer = Layer
+             { layerWidth :: ! Int
+             , layerHeight :: ! Int
+             , layerImages :: [ImageProp] }
 
 -- -----------------------------------------------------------------------------
-testStage :: IO Stage
-testStage = do
-  aa <- loadImage "data/scene01a.png"
-  bb <- loadImage "data/scene01b.png"
-  cc <- loadImage "data/scene01c.png"
-  dd <- loadImage "data/scene01d.png"
-  ss <- loadImage "data/sprite01.png"
-  return $! Stage 1000 480
-    [ Layer 640 480 [ImageProp (return aa)]
-    , Layer 800 480 [ImageProp (return bb)
-                    , ImageProp (return $ moveTo 550 200 ss)]
-    , Layer 800 480 [ImageProp (return $ moveTo 500 130 cc)]
-    , Layer 1000 480 [ImageProp (return $ moveTo 0 309 dd)] ]
-  
+data Stage = Stage
+             { stageWidth :: ! Int
+             , stageHeight :: ! Int
+             , stageLayers :: [Layer] }
 
 -- -----------------------------------------------------------------------------

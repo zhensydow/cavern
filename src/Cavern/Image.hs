@@ -15,43 +15,29 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ----------------------------------------------------------------------------- -}
-module Main( main, testStage ) where
+module Cavern.Image( Image(..), loadImage ) where
 
 -- -----------------------------------------------------------------------------
-import qualified Graphics.UI.SDL as SDL( 
-  InitFlag(..), Event(..), init, setVideoMode, waitEvent )
-import Cavern.Render
-import Cavern.Stage
+import qualified Graphics.UI.SDL as SDL( Surface )
+import qualified Graphics.UI.SDL.Image as SDL( load )
+import Cavern.Types( Translatable(..) )
 
 -- -----------------------------------------------------------------------------
-mainLoop :: IO ()
-mainLoop = do
-  e <- SDL.waitEvent
-  case e of
-    SDL.Quit -> return ()
-    _ -> mainLoop
+data Image = Image
+             { imgX :: ! Int
+             , imgY :: ! Int
+             , imgSurface :: ! SDL.Surface }
 
 -- -----------------------------------------------------------------------------
-main :: IO ()
-main = do
-  SDL.init [SDL.InitEverything]
-  _ <- SDL.setVideoMode 640 480 32 []
-  mainLoop
+instance Translatable Image where
+  moveTo x y img = img{ imgX = x, imgY = y }
+  translateTo dx dy img = img{ imgX = imgX img + dx
+                             , imgY = imgY img + dy }
 
 -- -----------------------------------------------------------------------------
-testStage :: IO Stage
-testStage = do
-  aa <- loadImage "data/scene01a.png"
-  bb <- loadImage "data/scene01b.png"
-  cc <- loadImage "data/scene01c.png"
-  dd <- loadImage "data/scene01d.png"
-  ss <- loadImage "data/sprite01.png"
-  return $! Stage 1000 480
-    [ Layer 640 480 [ImageProp (return aa)]
-    , Layer 800 480 [ImageProp (return bb)
-                    , ImageProp (return $ moveTo 550 200 ss)]
-    , Layer 800 480 [ImageProp (return $ moveTo 500 130 cc)]
-    , Layer 1000 480 [ImageProp (return $ moveTo 0 309 dd)] ]
-  
+loadImage :: FilePath -> IO Image
+loadImage filename = do
+  surface <- SDL.load filename
+  return $! Image 0 0 surface
 
 -- -----------------------------------------------------------------------------

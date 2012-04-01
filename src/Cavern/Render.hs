@@ -21,8 +21,7 @@ module Cavern.Render(
   RenderState, runRender, mkRenderState,  clearScreen, renderText,
   renderRectangle, renderImage, loadImage, renderStage,
   -- * Types
-  TextSpan(..), Rectangle(..), Image(..), Translatable(..), Stage(..), 
-  Layer(..), ImageProp(..), Camera(..),
+  TextSpan(..), Rectangle(..), Image(..), Translatable(..), Camera(..),
   -- * Colors
   black, white, red, green, blue
   ) where
@@ -34,11 +33,13 @@ import Control.Monad.State( MonadState, StateT, runStateT, get )
 import Data.Text( Text, unpack )
 import Data.Word( Word8 )
 import qualified Graphics.UI.SDL as SDL(
-  Surface, InitFlag(..), Color(..), Rect(..), init, setVideoMode, setCaption, 
+  Surface, InitFlag(..), Color(..), Rect(..), init, setVideoMode, setCaption,
   flip, blitSurface, mapRGB, fillRect, surfaceGetPixelFormat, getVideoSurface )
 import qualified Graphics.UI.SDL.TTF as SDLTTF(
   Font, init, openFont, renderTextBlended, textSize )
-import qualified Graphics.UI.SDL.Image as SDL( load )
+import Cavern.Image( Image(..), loadImage )
+import Cavern.Stage( Stage(..), Layer(..), ImageProp(..) )
+import Cavern.Types( Translatable(..) )
 import Paths_cavern( getDataFileName )
 
 -- -----------------------------------------------------------------------------
@@ -65,48 +66,10 @@ data Rectangle = Rectangle
                  , rectColor :: !(Word8, Word8, Word8) }
 
 -- -----------------------------------------------------------------------------
-data Image = Image
-             { imgX :: ! Int
-             , imgY :: ! Int
-             , imgSurface :: ! SDL.Surface }
-
--- -----------------------------------------------------------------------------
-data ImageProp = ImageProp
-             { getImage :: IO Image }
-
--- -----------------------------------------------------------------------------
-data Layer = Layer 
-             { layerWidth :: ! Int
-             , layerHeight :: ! Int
-             , layerImages :: [ImageProp] }
-                             
--- -----------------------------------------------------------------------------
-data Stage = Stage
-             { stageWidth :: ! Int
-             , stageHeight :: ! Int
-             , stageLayers :: [Layer] }
-
--- -----------------------------------------------------------------------------
 data Camera = Camera
               { cameraX :: ! Int
               , cameraY :: ! Int }
               deriving( Show )
-
--- -----------------------------------------------------------------------------
-class Translatable a where
-  moveTo :: Int -> Int -> a -> a
-  translateTo :: Int -> Int -> a -> a
-
-instance Translatable Image where
-  moveTo x y img = img{ imgX = x, imgY = y }
-  translateTo dx dy img = img{ imgX = imgX img + dx
-                             , imgY = imgY img + dy }
-
--- -----------------------------------------------------------------------------
-loadImage :: FilePath -> IO Image
-loadImage filename = do
-  surface <- SDL.load filename
-  return $! Image 0 0 surface
 
 -- -----------------------------------------------------------------------------
 data RenderState = RS { renderFont :: !SDLTTF.Font }
@@ -192,9 +155,9 @@ renderStage stage camera = do
       img <- io $ getImage prop
       renderImage $ translateTo (-tx) (-posy) $ img
   return ()
-  
+
     where
-      stw = fromIntegral $ stageWidth stage - 640
+      stw = (fromIntegral $ stageWidth stage - 640) :: Double
       posx = cameraX camera
       posy = cameraY camera
 
