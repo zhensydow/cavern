@@ -21,6 +21,7 @@ Library
   Hs-source-dirs:      src
   Default-language:    Haskell2010
   Exposed-modules:     Cavern.Render
+                       Cavern.Types
                        Cavern.Stage
                        Cavern.Scene
   Other-modules:       Paths_cavern 
