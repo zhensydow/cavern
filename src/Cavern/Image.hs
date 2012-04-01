@@ -15,10 +15,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ----------------------------------------------------------------------------- -}
-module Cavern.Image( Image(..), loadImage ) where
+module Cavern.Image( Image(..), loadImage, imgWidth, imgHeight ) where
 
 -- -----------------------------------------------------------------------------
-import qualified Graphics.UI.SDL as SDL( Surface )
+import qualified Graphics.UI.SDL as SDL(
+  Surface, surfaceGetWidth, surfaceGetHeight )
 import qualified Graphics.UI.SDL.Image as SDL( load )
 import Cavern.Types( Translatable(..) )
 
@@ -33,6 +34,13 @@ instance Translatable Image where
   moveTo x y img = img{ imgX = x, imgY = y }
   translateTo dx dy img = img{ imgX = imgX img + dx
                              , imgY = imgY img + dy }
+
+-- -----------------------------------------------------------------------------
+imgWidth :: Image -> Int
+imgWidth = SDL.surfaceGetWidth . imgSurface
+
+imgHeight :: Image -> Int
+imgHeight = SDL.surfaceGetHeight . imgSurface
 
 -- -----------------------------------------------------------------------------
 loadImage :: FilePath -> IO Image
