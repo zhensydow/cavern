@@ -21,14 +21,16 @@ Library
   Hs-source-dirs:      src
   Default-language:    Haskell2010
   Exposed-modules:     Cavern.Render
+                       Cavern.Stage
+                       Cavern.Scene
   Other-modules:       Paths_cavern 
-  Build-depends:       base==4.3.*, mtl==2.0.*, transformers==0.2.*, text==0.11.*, SDL==0.6.*, SDL-image==0.6.*, SDL-ttf==0.6.*
+  Build-depends:       base==4.3.*, mtl==2.0.*, transformers==0.2.*, text==0.11.*, SDL==0.6.*, SDL-image==0.6.*, SDL-ttf==0.6.*, directory==1.1.*, filepath==1.2.*, bytestring==0.9.*, aeson==0.6.*, unix==2.4.*
  
 Executable cavern
   Hs-source-dirs:      src
   Default-language:    Haskell2010
   Main-is:             cavern_main.hs
-  Build-depends:       base==4.3.*, SDL==0.6.*
+  Build-depends:       base==4.3.*, mtl==2.0.*, transformers==0.2.*, text==0.11.*, SDL==0.6.*, SDL-image==0.6.*, SDL-ttf==0.6.*, directory==1.1.*, filepath==1.2.*, bytestring==0.9.*, aeson==0.6.*, unix==2.4.*
   Ghc-options:         -Wall -O2 -funbox-strict-fields
   
   -- Modules not exported by this package.
