@@ -142,7 +142,6 @@ loadScene filename = do
   dat <- BSL.readFile filename
   case decode dat of
     Just v -> do
-      print v
       curdir <- getCurrentDirectory
       setCurrentDirectory $ combine curdir (takeDirectory filename)
       scn <- mkScene v
