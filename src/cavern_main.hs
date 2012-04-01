@@ -25,21 +25,23 @@ import System.Posix.Unistd( sleep )
 import Cavern.Render(
   Camera(..), mkRenderState, runRender, clearScreen, renderStage )
 import Cavern.Scene( Scene(..), loadScene )
+import Cavern.Stage( Stage(..) )
 
 -- -----------------------------------------------------------------------------
-mainLoop :: IO ()
-mainLoop = do
+--mainLoop :: Stage -> IO ()
+mainLoop a st = do
+  runRender (clearScreen >> renderStage st (Camera 10 0) ) a  
   e <- SDL.waitEvent
   case e of
     SDL.Quit -> return ()
-    _ -> mainLoop
+    _ -> mainLoop a st
 
 -- -----------------------------------------------------------------------------
 main :: IO ()
 main = do
-  SDL.init [SDL.InitEverything]
-  _ <- SDL.setVideoMode 640 480 32 []
-  mainLoop
+  a <- mkRenderState
+  st <- fmap sceneStage $ loadScene "data/scene01.json"
+  mainLoop a st
 
 -- -----------------------------------------------------------------------------
 test01 :: IO ()
