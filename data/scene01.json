@@ -1,0 +1,29 @@
+{ "layers": [
+        { "props": [ 
+                { "static": 
+                  { "img": "scene01a.png" } } ]
+          },
+        { "props": [ 
+                { "static": 
+                  { "img": "scene01b.png" } },
+                { "static": 
+                  { "img": "sprite01.png",
+                    "posx": 550, "posy": 200 } } ]
+          },
+        { "props": [ 
+                { "static": 
+                  { "img": "scene01c.png",
+                    "posx": 500, "posy": 130 } } ],
+          "width": 800,
+          "height": 480
+          },
+        { "props": [ 
+                { "static": 
+                  { "img": "scene01d.png",
+                    "posx": 0, "posy": 309 } } ],
+          "width": 1000,
+          "height": 480
+          }
+        ],
+  "walk": "scene01_w.png"
+}
